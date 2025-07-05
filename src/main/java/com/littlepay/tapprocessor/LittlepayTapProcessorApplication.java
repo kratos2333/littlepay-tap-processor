@@ -11,7 +11,7 @@ public class LittlepayTapProcessorApplication {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(LittlepayTapProcessorApplication.class, args);
         TapProcessor tapProcessor = context.getBean(TapProcessor.class);
-        tapProcessor.processTrips("src/main/resources/taps.csv", "trips.csv");
+        tapProcessor.processTaps("src/main/resources/taps.csv", "trips.csv");
     }
 
 }

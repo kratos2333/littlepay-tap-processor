@@ -22,14 +22,15 @@ public class TapProcessor {
     }
 
     /**
-     * Main processing method
-     * @param inputFile
-     * @param outputFile
+     * Main processing method, read the taps, processes them into trips and write into a csv file
+     * @param inputFile input csv file with taps
+     * @param outputFile output csv file with trips
      */
-    public void processTrips(String inputFile, String outputFile) {
+    public void processTaps(String inputFile, String outputFile) {
         // 1. Read taps from csv file (csv -> List<Tap>)
         logger.info("Start processing taps from {}...", inputFile);
         List<Tap> taps = csvParsor.readTapsFromCsv(inputFile);
+        logger.info("Fetched {} taps from {}", taps.size(), inputFile);
 
         // 2. process taps (List<Tap> -> List<Trip>)
         logger.info("Now calculating trips based on taps...");
