@@ -12,4 +12,13 @@ public class LocalDateTimeConverter extends AbstractBeanField<LocalDateTime, Str
     protected LocalDateTime convert(String value) {
         return LocalDateTime.parse(value.trim(), FORMATTER);
     }
+
+    @Override
+    protected String convertToWrite(Object value) {
+        if (value == null) {
+            return "";
+        }
+        LocalDateTime dateTime = (LocalDateTime) value;
+        return dateTime.format(FORMATTER);
+    }
 }

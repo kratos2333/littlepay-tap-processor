@@ -40,7 +40,7 @@ public class TapProcessor {
 
         // 3. Write output (List<Trip> -> csv)
         logger.info("Writing output to file {}...", outputFile);
-        csvParsor.writeTripsToCsv(trips);
+        csvParsor.writeTripsToCsv(trips, outputFile);
     }
 
     /**
