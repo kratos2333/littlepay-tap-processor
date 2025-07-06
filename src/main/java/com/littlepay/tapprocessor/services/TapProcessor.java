@@ -1,13 +1,15 @@
 package com.littlepay.tapprocessor.services;
 
 import com.littlepay.tapprocessor.models.Tap;
+import com.littlepay.tapprocessor.models.TapType;
 import com.littlepay.tapprocessor.models.Trip;
+import com.littlepay.tapprocessor.models.TripType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Duration;
+import java.util.*;
 
 @Service
 public class TapProcessor {
@@ -43,13 +45,82 @@ public class TapProcessor {
 
     /**
      * Generate trips based on pass in taps
-     * @param taps
-     * @return trips
+     * @param taps tap records fetched from input csv file
+     * @return trips generated trips based on the tap records
      */
     public List<Trip> generateTrips(List<Tap> taps) {
         List<Trip> trips = new ArrayList<>();
+
+        // PAN and BusID uniquely identifies a trip
+        Map<String, Tap> pendingTapOns = new HashMap<>();
+
+        // Sort the taps based on the PAN, then busId, then by the time
+        taps.sort(
+                Comparator.comparing(Tap::getPan)
+                        .thenComparing(Tap::getBusId)
+                        .thenComparing(Tap::getDateTimeUtc)
+        );
+
+        for(Tap tap : taps) {
+            String tapKey = tap.getPan() + "_" + tap.getBusId();
+            if(tap.getType().equals(TapType.ON)){
+                if(pendingTapOns.containsKey(tapKey)) {
+                    // handle incomplete trip
+                    Tap previousTap = pendingTapOns.get(tapKey);
+                    Trip incompleteTrip = createIncompleteTrip(previousTap);
+                    trips.add(incompleteTrip);
+                }
+
+                pendingTapOns.put(tapKey, tap);
+            } else if(tap.getType().equals(TapType.OFF)) {
+                if(pendingTapOns.containsKey(tapKey)){
+                    Trip completeTrip = createCompleteOrCancelledTrip(pendingTapOns.get(tapKey), tap);
+                    pendingTapOns.remove(tapKey);
+                    trips.add(completeTrip);
+                } else {
+                    // This should not happen log a warning here
+                    logger.warn("Warning: Tap-off without matching tap-on for: {}", tapKey);
+                }
+            }
+        }
+
+        // Handle any remaining pending tap-ons as incomplete trips (tap-ons without offs)
+        for (Tap pendingTapOn : pendingTapOns.values()) {
+            Trip incompleteTrip = createIncompleteTrip(pendingTapOn);
+            trips.add(incompleteTrip);
+        }
+
         return trips;
     }
 
+    private Trip createCompleteOrCancelledTrip(Tap tapOn, Tap tapOff) {
+        return Trip.builder()
+                .started(tapOn.getDateTimeUtc())
+                .finished(tapOff.getDateTimeUtc())
+                .durationSecs(Duration.between(tapOn.getDateTimeUtc(), tapOff.getDateTimeUtc()).getSeconds())
+                .fromStopId(tapOn.getStopId())
+                .toStopId(tapOff.getStopId())
+                .chargeAmount(pricingService.calculateCompleteOrCancelledTrip(tapOn.getStopId(), tapOff.getStopId()))
+                .companyId(tapOn.getCompanyId())
+                .busId(tapOn.getBusId())
+                .pan(tapOn.getPan())
+                .status(tapOn.getStopId().equals(tapOff.getStopId())?TripType.CANCELLED:TripType.COMPLETED)
+                .build();
+    }
+
+    private Trip createIncompleteTrip(Tap previousTap) {
+        return Trip.builder()
+                .started(previousTap.getDateTimeUtc())
+                .finished(null)
+                .durationSecs(null)
+                .fromStopId(previousTap.getStopId())
+                .toStopId(null)
+                .chargeAmount(pricingService.calculateIncompleteTrip(previousTap.getStopId()))
+                .companyId(previousTap.getCompanyId())
+                .busId(previousTap.getBusId())
+                .pan(previousTap.getPan())
+                .status(TripType.INCOMPLETE)
+                .build();
+    }
 
 }

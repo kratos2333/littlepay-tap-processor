@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Tap {
     @CsvBindByName(column="ID")
     private Long id;
