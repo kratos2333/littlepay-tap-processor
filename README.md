@@ -53,8 +53,14 @@ This system processes CSV files containing tap events and produces trip summarie
     ```bash
     mvn clean spring-boot:run
     ```
+   
+3. **Package and run with custom input/output files:**
+   ```bash
+   mvn clean package
+   java -jar littlepay-tap-processor-0.0.1-SNAPSHOT.jar [input_file_path] [output_file_path]
+    ```
 
-3. **Run unit tests:**
+4. **Run unit tests:**
     ```bash
     mvn clean test
     ```
@@ -66,16 +72,21 @@ This system processes CSV files containing tap events and produces trip summarie
 ID, DateTimeUTC, TapType, StopId, CompanyId, BusID, PAN
 1, 22-01-2023 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559
 2, 22-01-2023 13:05:00, OFF, Stop2, Company1, Bus37, 5500005555555559
+3, 22-01-2023 09:20:00, ON, Stop3, Company1, Bus36, 4111111111111111
+4, 23-01-2023 08:00:00, ON, Stop1, Company1, Bus37, 4111111111111111
+5, 23-01-2023 08:02:00, OFF, Stop1, Company1, Bus37, 4111111111111111
+6, 24-01-2023 16:30:00, OFF, Stop2, Company1, Bus37, 5500005555555559
 ```
 
 ### Output CSV Format (trips.csv)
 ```csv
-Started, Finished, DurationSecs, FromStopId, ToStopId, ChargeAmount, CompanyId, BusID, PAN, Status
-22-01-2023 13:00:00, 22-01-2023 13:05:00, 300, Stop1, Stop2, $3.25, Company1, Bus37, 5500005555555559, COMPLETED
+Started,Finished,DurationSecs,FromStopId,ToStopId,ChargeAmount,CompanyId,BusId,PAN,Status
+23-01-2023 08:00:00,23-01-2023 08:02:00,120,Stop1,Stop1,$0,Company1,Bus37,4111111111111111,CANCELLED
+22-01-2023 13:00:00,22-01-2023 13:05:00,300,Stop1,Stop2,$3.25,Company1,Bus37,5500005555555559,COMPLETED
+22-01-2023 09:20:00,,,Stop3,,$7.3,Company1,Bus36,4111111111111111,INCOMPLETE
 ```
 
 ## Assumptions
 1. taps.csv is well-formatted and contains valid data (no missing or malformed fields).
-2. The combination of PAN and BusID uniquely identifies a trip.
-3. Tap-off events without a matching prior tap-on will be ignored, and a warning will be logged.
-4. Only Stop1, Stop2, and Stop3 are considered valid stopIds. If a trip involves any other stopId, the cost will be treated as zero.
+2. Tap-off events without a matching prior tap-on will be ignored, and a warning will be logged.
+3. Only Stop1, Stop2, and Stop3 are considered valid stopIds. If a trip involves any other stopId, the cost will be treated as zero.

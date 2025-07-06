@@ -51,7 +51,6 @@ public class TapProcessor {
     public List<Trip> generateTrips(List<Tap> taps) {
         List<Trip> trips = new ArrayList<>();
 
-        // PAN and BusID uniquely identifies a trip
         Map<String, Tap> pendingTapOns = new HashMap<>();
 
         // Sort the taps based on the PAN, then busId, then by the time
@@ -74,6 +73,7 @@ public class TapProcessor {
                 pendingTapOns.put(tapKey, tap);
             } else if(tap.getType().equals(TapType.OFF)) {
                 if(pendingTapOns.containsKey(tapKey)){
+                    // find the matched prior tap-on
                     Trip completeTrip = createCompleteOrCancelledTrip(pendingTapOns.get(tapKey), tap);
                     pendingTapOns.remove(tapKey);
                     trips.add(completeTrip);
