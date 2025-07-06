@@ -11,12 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class CsvParsorTest {
-    private CsvParsor csvParsor = new CsvParsor();
+class CsvParserTest {
+    private CsvParser csvParser = new CsvParser();
 
     @Test
     void testReadTapsFromCsvSuccess() {
-        List<Tap> taps = csvParsor.readTapsFromCsv("src/test/resources/test_taps.csv");
+        List<Tap> taps = csvParser.readTapsFromCsv("src/test/resources/test_taps.csv");
         assertEquals(6, taps.size());
         Tap tap = taps.get(0);
         assertThat(tap.getId()).isEqualTo(1L);
@@ -27,14 +27,14 @@ class CsvParsorTest {
 
     @Test
     void testReadTapsFromCsvEmptyFile() {
-        List<Tap> taps = csvParsor.readTapsFromCsv("src/test/resources/test_taps_empty.csv");
+        List<Tap> taps = csvParser.readTapsFromCsv("src/test/resources/test_taps_empty.csv");
         assertEquals(0, taps.size());
     }
 
     @Test
     void testReadTapsFromCsvEmptyFailure() {
         assertThrows(IllegalArgumentException.class, () -> {
-            csvParsor.readTapsFromCsv("src/test/resources/test_taps_invalid.csv");
+            csvParser.readTapsFromCsv("src/test/resources/test_taps_invalid.csv");
         });
     }
 

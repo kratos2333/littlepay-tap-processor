@@ -16,11 +16,11 @@ public class TapProcessor {
     private static final Logger logger = LoggerFactory.getLogger(TapProcessor.class);
 
     private final PricingService pricingService;
-    private final CsvParsor csvParsor;
+    private final CsvParser csvParser;
 
-    public TapProcessor(PricingService pricingService, CsvParsor csvParsor) {
+    public TapProcessor(PricingService pricingService, CsvParser csvParser) {
         this.pricingService = pricingService;
-        this.csvParsor = csvParsor;
+        this.csvParser = csvParser;
     }
 
     /**
@@ -31,7 +31,7 @@ public class TapProcessor {
     public void processTaps(String inputFile, String outputFile) {
         // 1. Read taps from csv file (csv -> List<Tap>)
         logger.info("Start processing taps from {}...", inputFile);
-        List<Tap> taps = csvParsor.readTapsFromCsv(inputFile);
+        List<Tap> taps = csvParser.readTapsFromCsv(inputFile);
         logger.info("Fetched {} taps from {}", taps.size(), inputFile);
 
         // 2. process taps (List<Tap> -> List<Trip>)
@@ -40,7 +40,7 @@ public class TapProcessor {
 
         // 3. Write output (List<Trip> -> csv)
         logger.info("Writing output to file {}...", outputFile);
-        csvParsor.writeTripsToCsv(trips, outputFile);
+        csvParser.writeTripsToCsv(trips, outputFile);
     }
 
     /**
@@ -73,7 +73,7 @@ public class TapProcessor {
                 pendingTapOns.put(tapKey, tap);
             } else if(tap.getType().equals(TapType.OFF)) {
                 if(pendingTapOns.containsKey(tapKey)){
-                    // find the matched prior tap-on
+                    // find the matched prior tap-on (either a complete trip or a cancelled trip)
                     Trip completeTrip = createCompleteOrCancelledTrip(pendingTapOns.get(tapKey), tap);
                     pendingTapOns.remove(tapKey);
                     trips.add(completeTrip);

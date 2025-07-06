@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: littlepay-tap-processor
+tap-processor:
+  input-file: src/main/resources/taps.csv
+  output-file: trips.csv

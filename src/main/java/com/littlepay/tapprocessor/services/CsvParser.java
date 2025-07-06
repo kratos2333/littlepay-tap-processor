@@ -18,8 +18,8 @@ import java.io.Writer;
 import java.util.List;
 
 @Service
-public class CsvParsor {
-    private static final Logger logger = LoggerFactory.getLogger(CsvParsor.class);
+public class CsvParser {
+    private static final Logger logger = LoggerFactory.getLogger(CsvParser.class);
 
     private static final String[] columnMapping = {
             "Started", "Finished", "DurationSecs", "FromStopId", "ToStopId",
@@ -40,7 +40,7 @@ public class CsvParsor {
                     .parse();
         } catch (IOException e) {
             logger.error("Error while reading file {}", inputFile, e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error while reading file " + inputFile, e);
         } catch (RuntimeException e) {
             logger.error("CSV parsing error in file {}: {}", inputFile, e.getMessage());
             throw new IllegalArgumentException("CSV file format is invalid: " + inputFile, e);
